@@ -1,0 +1,306 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Products ({{ totalItems }})</h1>
+      </div>
+      <div class="col-sm-6 text-right">
+        <button type="button" class="btn btn-primary btn-sm" (click)="openCreateModal()">
+          <i class="fas fa-plus fa-fw"></i>
+          New
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /.container-fluid -->
+</section>
+
+<section class="content" *ngIf="loading">
+  <app-loader></app-loader>
+</section>
+
+<!-- Main content -->
+<section class="content" *ngIf="showNotFoundSection()">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <app-not-found
+      [title]="'No products found!'"
+      [description]="'Please add the products or you may return to dashboard page.'"
+      [showRedirectBtn]="true"
+      [redirectBtnLabel]="'Return To Dashboard'"
+      [redirectUrl]="'/'"
+      [showIcon]="true"
+    ></app-not-found>
+  </div>
+</section>
+
+<section class="content" *ngIf="showNoSearchResultsSection()">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <app-not-found
+      [title]="'No search result found!'"
+      [description]="'Try changing the search filters and search again.'"
+      [showRedirectBtn]="true"
+      [redirectBtnLabel]="'Clear Filters'"
+      [redirectUrl]="'/products'"
+      [showIcon]="true"
+      (redirectBtnClicked)="reinitProducts()"
+    ></app-not-found>
+  </div>
+</section>
+
+<!-- Main content -->
+<section class="content" *ngIf="products?.length && !loading">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <div class="card card-default">
+      <div class="card-header">
+        <h3 class="card-title">Filters</h3>
+
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="!filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-minus"></i></button>
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <!-- /.card-header -->
+      <div class="card-body" *ngIf="!filterCollapsed">
+        <div class="row">
+          <div class="form-group col-4">
+            <label class="col-form-label"> Product Category </label>
+            <ng-select2
+              [data]="productCategories"
+              [options]="{
+                multiple: false,
+                closeOnSelect: true,
+                width: '100%'
+              }"
+              [(ngModel)]="filter.category"
+              [placeholder]="'Select Product Category'"
+              (valueChanged)="filterProducts()"
+              >
+            </ng-select2>
+          </div>
+          <div class="form-group col-4">
+            <label class="col-form-label"> Product Visibility </label>
+            <ng-select2
+              [data]="productVisibilities"
+              [options]="{
+                multiple: false,
+                closeOnSelect: true,
+                width: '100%'
+              }"
+              [(ngModel)]="filter.visibility"
+              [placeholder]="'Select Product Visibility'"
+              (valueChanged)="filterProducts()"
+              >
+            </ng-select2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body table-responsive p-0">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th width="5%">#</th>
+              <th width="10%" class="text-center">Visibility</th>
+              <th width="20%">Name</th>
+              <th width="20%">Category</th>
+              <th width="15%">Created On</th>
+              <th width="15%">Updated On</th>
+              <th width="15%">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of products | paginate: { id: 'productsPagination', itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }; let i = index; ">
+              <td>{{ currentPage * itemsPerPage - itemsPerPage + i + 1 }}</td>
+              <td class="text-center">
+                <span *ngIf="product?.visibility">
+                  <i class="fa fa-check fa-fw"></i>
+                </span>
+                <span *ngIf="!product?.visibility">
+                  <i class="fa fa-times fa-fw"></i>
+                </span>
+              </td>
+              <td>{{ product?.name }}</td>
+              <td>{{ product?.category?.name }}</td>
+              <td>
+                <small>
+                  <div>{{product?.created_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                <div>{{product?.created_on?.toDate() | dateAgo }}</div>
+                </small>
+              </td>
+              <td>
+                <small>
+                  <div>{{product?.updated_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                  <div>{{product?.updated_on?.toDate() | dateAgo }}</div>
+                </small>
+              </td>
+              <td>
+                <div>
+                  <button type="button" class="btn btn-outline-primary btn-xs mr-2" (click)="openUpdateModal(product)" >
+                    <i class="fas fa-edit fa-fw"></i> Edit</button>
+
+                  <button type="button" class="btn btn-outline-danger btn-xs" (click)="openDeleteModal(product)">
+                    <i class="fas fa-trash fa-fw"></i> Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- /.card-body -->
+      <div class="card-footer clearfix">
+        <pagination-controls (pageChange)="getProducts($event)" id="productsPagination"></pagination-controls>
+      </div>
+    </div>
+  </div>
+  <!-- /.card -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="modal-default" #productFormModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="productForm" (ngSubmit)="onProductFormSubmit()">
+        <div class="modal-header">
+          <h4 class="modal-title">
+            <span>{{ action === 'create' ? 'Create' : 'Edit' }} Product</span> 
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body row">
+          <div class="form-group col-12" *ngIf="action === 'update' && productId?.value">
+            <label class="col-form-label" for="productId"> Product ID 
+              <span class="required">*</span>
+            </label>
+            <input type="text" class="form-control" id="productId" placeholder="Product ID" formControlName="id" [ngClass]="{'is-invalid': productId?.errors?.required, 'is-valid': !productId?.errors?.required}" disabled>
+            <span *ngIf="productId?.errors?.required" class="error invalid-feedback">Product id is required</span>
+          </div>
+          
+          <div class="form-group col-12">
+            <label class="col-form-label" for="productName"> Product Name 
+              <span class="required">*</span>
+             </label>
+            <input type="text" class="form-control" id="productName" placeholder="Product Name" formControlName="name" [ngClass]="{'is-invalid': productName?.errors && productName?.touched, 'is-valid': !productName?.errors}" tabindex="1">
+            <span *ngIf="productName?.errors?.required" class="error invalid-feedback">Product name is required!</span>
+            <span *ngIf="productName?.errors?.minlength" class="error invalid-feedback">Product name should be have atleast {{productName?.errors?.minlength?.requiredLength }} characters!</span>
+          </div>
+
+          <div class="form-group col-12">
+            <label class="col-form-label" for="productDescription">Description
+              <span class="required">*</span>
+            </label>
+            <textarea class="form-control" rows="3" placeholder="Product Description" name="description" formControlName="description" [ngClass]="{'is-invalid': productDescription?.errors && productDescription?.touched, 'is-valid': !productDescription?.errors}" tabindex="2"></textarea>
+            <span *ngIf="productDescription?.errors?.required" class="error invalid-feedback">Product description is required!</span>
+            <span *ngIf="productDescription?.errors?.minlength" class="error invalid-feedback">Product description should be have atleast {{productDescription?.errors?.minlength?.requiredLength}} characters!</span>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label" for="productQuantity">Quantity
+              <span class="required">*</span> </label>
+            <input type="number" min="1" max="1000" class="form-control" id="productQuantity" placeholder="Quantity"  formControlName="quantity" name="quantity" [ngClass]="{'is-invalid': productQuantity?.errors && productQuantity?.touched, 'is-valid': !productQuantity?.errors}" tabindex="3">
+            <span *ngIf="productQuantity?.errors?.required" class="error invalid-feedback">Product quantity is required!</span>
+            <span *ngIf="productQuantity?.errors?.min" class="error invalid-feedback">Product quantity should be have atleast {{productQuantity?.errors?.min?.min }} value!</span>
+            <span *ngIf="productQuantity?.errors?.max" class="error invalid-feedback">Product quantity should be have max {{productQuantity?.errors?.max?.max }} value!</span>
+          </div>
+
+          <div class="form-group  col-6">
+            <label class="col-form-label" for="productCategory">Category <span class="required">*</span> </label>
+            <select class="form-control" id="productCategory" formControlName="category_id" [ngClass]="{'is-invalid': productCategory?.errors && productCategory?.touched, 'is-valid': !productCategory?.errors}" tabindex="4">
+              <option value="" selected>-Select Category-</option>
+              <option *ngFor="let category of categories" [ngValue]="category?.id" [selected]="productForm?.controls?.category_id?.value === category?.id" name="category_id" >{{ category?.name}}</option>
+            </select>
+            <span *ngIf="productCategory?.errors?.required" class="error invalid-feedback">Product category is required!</span>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label" for="productPrice">Our Price <span class="required">*</span> </label>
+            <input type="number" min="1" max="1000" class="form-control" id="productPrice" placeholder="Our Price" formControlName="price" name="price" [ngClass]="{'is-invalid': productPrice?.errors && productPrice?.touched, 'is-valid': !productPrice?.errors}" tabindex="5">
+            <span *ngIf="productPrice?.errors?.min" class="error invalid-feedback">Product price should be have atleast {{productPrice?.errors?.min?.min }} value!</span>
+            <span *ngIf="productPrice?.errors?.max" class="error invalid-feedback">Product price should be have max {{productPrice?.errors?.max?.max }} value!</span>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label" for="productOldPrice">MRP <span class="required">*</span> </label>
+            <input type="number" min="1" max="1000" class="form-control" id="productOldPrice" placeholder="MRP" formControlName="oldPrice" name="oldPrice" [ngClass]="{'is-invalid': productOldPrice?.errors && productOldPrice?.touched, 'is-valid': !productOldPrice?.errors}" tabindex="6">
+            <span *ngIf="productOldPrice?.errors?.required" class="error invalid-feedback">Product MRP is required!</span>
+            <span *ngIf="productOldPrice?.errors?.min" class="error invalid-feedback">Product MRP should be have atleast {{productOldPrice?.errors?.min?.min }} value!</span>
+            <span *ngIf="productOldPrice?.errors?.max" class="error invalid-feedback">Product MRP should be have max {{productOldPrice?.errors?.max?.max }} value!</span>
+          </div>
+          
+          <div class="form-group col-6">
+            <label class="col-form-label" for="visibility">Product Visiblility? <span class="required">*</span> </label>
+            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+              <input type="checkbox" class="custom-control-input" id="visibility" formControlName="visibility" name="visibility" >
+              <label class="custom-control-label" for="visibility">
+                <span> {{ productVisibility?.value && productVisibility?.value === true ? 'Visible' : 'Hidden' }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group col-6">
+          </div>
+          
+          <div class="form-group  col-6">
+            <label class="col-form-label" for="productImage">Image <span class="required">*</span> </label>
+            <select class="form-control" id="productImage" formControlName="image" [ngClass]="{'is-invalid': productImage?.errors && productImage?.touched, 'is-valid': !productImage?.errors}" tabindex="7">
+              <option value="" selected>-Select Image-</option>
+              <option *ngFor="let image of images" [value]="image" [selected]="image === productImage?.value" name="image">
+                {{ image?.slice(image?.lastIndexOf("/")+1, image?.length) }}</option>
+            </select>
+            <span *ngIf="productImage?.errors?.required" class="error invalid-feedback">Product image is required!</span>
+          </div>
+          <div class="form-group col-6 text-center" *ngIf="productImage?.value !== ''">
+            <img src="{{ 'http://my-footwear-shop.herokuapp.com/' + productImage?.value }}" height="50" widht="50" class="mt-4">
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal"  tabindex="8"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+          <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid" tabindex="9">
+            <i class="fa fa-floppy-o fa-fw"></i>
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+
+<div class="modal fade" id="modal-default" #deleteProductModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>Delete Product Confirmation</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body px-4">
+        <p>Are you sure to delete this product? This process can not be undone.</p>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+        <button type="button" class="btn btn-danger" (click)="deleteProduct()">
+          <i class="fa fa-trash fa-fw"></i>
+          Yes, Delete It
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

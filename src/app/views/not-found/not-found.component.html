@@ -1,0 +1,22 @@
+  <!-- Main content -->
+  <section class="content">
+    <div class="error-page pt-5 pb-5">
+      <h2 class="headline text-warning" *ngIf="showIcon"> 404</h2>
+
+      <div class="error-content">
+        <h3><i class="fas fa-exclamation-triangle text-warning"></i>
+          {{ title }}</h3>
+
+        <p>{{ description }}</p>
+        <div *ngIf="showRedirectBtn">
+          <button (click)="redirectToUrl()" class="btn btn-lg btn-primary">
+            <i class="fa fa-globe fa-fw"></i>
+            {{ redirectBtnLabel }}
+          </button>
+        </div>
+      </div>
+      <!-- /.error-content -->
+    </div>
+    <!-- /.error-page -->
+  </section>
+  <!-- /.content -->

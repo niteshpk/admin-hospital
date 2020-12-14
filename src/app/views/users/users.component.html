@@ -1,0 +1,364 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Users ({{ totalItems }})</h1>
+      </div>
+      <div class="col-sm-6 text-right">
+        <button type="button" class="btn btn-primary btn-sm" (click)="openCreateModal()">
+          <i class="fas fa-plus fa-fw"></i>
+          New
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /.container-fluid -->
+</section>
+
+<section class="content" *ngIf="loading">
+  <app-loader></app-loader>
+</section>
+
+<!-- Main content -->
+<section class="content" *ngIf="showNotFoundSection()">
+  <!-- Default box -->
+  <div class="container-fluid">
+
+    <app-not-found
+      [title]="'No users found!'"
+      [description]="'Please add the users or you may return to dashboard page.'"
+      [showRedirectBtn]="true"
+      [redirectBtnLabel]="'Return To Dashboard'"
+      [redirectUrl]="'/'"
+      [showIcon]="true"
+    ></app-not-found>
+  </div>
+</section>
+
+<section class="content" *ngIf="showNoSearchResultsSection()">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <app-not-found
+      [title]="'No search result found!'"
+      [description]="'Try changing the search filters and search again.'"
+      [showRedirectBtn]="true"
+      [redirectBtnLabel]="'Clear Filters'"
+      [redirectUrl]="'/users'"
+      [showIcon]="true"
+      (redirectBtnClicked)="reinitUsers()"
+    ></app-not-found>
+  </div>
+</section>
+
+<!-- Main content -->
+<section class="content" *ngIf="users?.length && !loading">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <div class="card card-default">
+      <div class="card-header">
+        <h3 class="card-title">Filters</h3>
+
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="!filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-minus"></i></button>
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <!-- /.card-header -->
+      <div class="card-body" *ngIf="!filterCollapsed">
+        <div class="row">
+          <div class="form-group col-4">
+            <label class="col-form-label"> User Activated </label>
+            <ng-select2
+              [data]="userActivated"
+              [options]="{
+                multiple: false,
+                closeOnSelect: true,
+                width: '100%'
+              }"
+              [(ngModel)]="filter.activated"
+              [placeholder]="'Select User Activated'"
+              (valueChanged)="filterUsers()"
+              >
+            </ng-select2>
+          </div>
+          <div class="form-group col-4">
+            <label class="col-form-label"> User Role </label>
+            <ng-select2
+              [data]="userRoles"
+              [options]="{
+                multiple: false,
+                closeOnSelect: true,
+                width: '100%'
+              }"
+              [(ngModel)]="filter.role"
+              [placeholder]="'Select User Role'"
+              (valueChanged)="filterUsers()"
+              >
+            </ng-select2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body table-responsive p-0">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th width="5%">#</th>
+              <th width="10%" class="text-center">Activated</th>
+              <th width="5%">Roles</th>
+              <th width="25%">Username</th>
+              <th width="15%">Created On</th>
+              <th width="15%">Updated On</th>
+              <th width="15%">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users | paginate: { id: 'usersPagination', itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }; let i = index; ">
+              <td>{{ currentPage * itemsPerPage - itemsPerPage + i + 1 }}</td>
+              <td class="text-center">
+                <span *ngIf="user?.activated">
+                  <i class="fa fa-check fa-fw"></i>
+                </span>
+                <span *ngIf="!user?.activated">
+                  <i class="fa fa-times fa-fw"></i>
+                </span>
+              </td>
+              <td>
+                <span class="right badge badge-primary" *ngFor="let role of user?.roles">{{role | uppercase}}</span>
+              </td>
+              <td>
+                <div>{{ user?.firstName + ' ' + user?.lastName }}</div>
+                <div>{{ user?.username }}</div>
+              </td>
+              <td>
+                <small>
+                  <div>{{user?.created_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                  <div>{{user?.created_on?.toDate() | dateAgo }}</div>
+                </small>                  
+              </td>
+              <td>
+                <small>
+                  <div>{{user?.updated_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                  <div>{{user?.updated_on?.toDate() | dateAgo }}</div>
+                </small>                  
+              </td>
+              <td>
+                <div>
+                  <button type="button" class="btn btn-outline-primary btn-xs mr-2" (click)="openUpdateModal(user)" >
+                    <i class="fas fa-edit fa-fw"></i> Edit</button>
+
+                  <button type="button" class="btn btn-outline-danger btn-xs mr-2" (click)="openDeleteModal(user)">
+                    <i class="fas fa-trash fa-fw"></i> Delete</button>
+
+                  <button type="button" class="btn btn-outline-info btn-xs" (click)="openAddressesModal(user)">
+                      <i class="fas fa-map fa-fw"></i> Addresses</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- /.card-body -->
+      <div class="card-footer clearfix">
+        <pagination-controls (pageChange)="getUsers($event)" id="usersPagination"></pagination-controls>
+      </div>
+    </div>
+  </div>
+  <!-- /.card -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="modal-default" #userFormModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="userForm" (ngSubmit)="onUserFormSubmit()">
+        <div class="modal-header">
+          <h4 class="modal-title">
+            <span>{{ action === 'create' ? 'Create' : 'Edit' }} User</span> 
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body row">
+          <div class="form-group col-12" *ngIf="action === 'update' && userId?.value">
+            <label class="col-form-label" for="userId"> User ID 
+              <span class="required">*</span>
+            </label>
+            <input type="text" class="form-control" id="userId" placeholder="User ID" formControlName="id" [ngClass]="{'is-invalid': userId?.errors?.required, 'is-valid': !userId?.errors?.required}" disabled>
+            <span *ngIf="userId?.errors?.required" class="error invalid-feedback">User id is required</span>
+          </div>
+          
+          <div class="form-group col-12">
+            <label class="col-form-label" for="username"> Email 
+              <span class="required">*</span>
+             </label>
+            <input type="text" class="form-control" id="username" placeholder="Email" formControlName="username" [ngClass]="{'is-invalid': username?.errors && username?.touched, 'is-valid': !username?.errors}" tabindex="1">
+            <span *ngIf="username?.errors?.required" class="error invalid-feedback">Email is required!</span>
+            <span *ngIf="username?.errors?.minlength" class="error invalid-feedback">Email should be have atleast {{username?.errors?.minlength?.requiredLength }} characters!</span>
+          </div>
+          
+          <div class="form-group col-6">
+            <label class="col-form-label" for="firstName"> Fist Name 
+              <span class="required">*</span>
+             </label>
+            <input type="text" class="form-control" id="firstName" placeholder="First Name" formControlName="firstName" [ngClass]="{'is-invalid': firstName?.errors && firstName?.touched, 'is-valid': !firstName?.errors}" tabindex="1">
+            <span *ngIf="firstName?.errors?.required" class="error invalid-feedback">First name is required!</span>
+            <span *ngIf="firstName?.errors?.minlength" class="error invalid-feedback">First name should be have atleast {{firstName?.errors?.minlength?.requiredLength }} characters!</span>
+          </div>
+
+          
+          <div class="form-group col-6">
+            <label class="col-form-label" for="lastName"> Last Name 
+              <span class="required">*</span>
+             </label>
+            <input type="text" class="form-control" id="lastName" placeholder="Last Name" formControlName="lastName" [ngClass]="{'is-invalid': lastName?.errors && lastName?.touched, 'is-valid': !lastName?.errors}" tabindex="1">
+            <span *ngIf="lastName?.errors?.required" class="error invalid-feedback">Last name is required!</span>
+            <span *ngIf="lastName?.errors?.minlength" class="error invalid-feedback">Last name should be have atleast {{lastName?.errors?.minlength?.requiredLength }} characters!</span>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label" for="password"> Password 
+              <span class="required">*</span>
+             </label>
+            <input type="text" class="form-control" id="password" placeholder="Password" formControlName="password" [ngClass]="{'is-invalid': password?.errors && password?.touched, 'is-valid': !password?.errors}" tabindex="1">
+            <span *ngIf="password?.errors?.required" class="error invalid-feedback">Password is required!</span>
+            <span *ngIf="password?.errors?.minlength" class="error invalid-feedback">Password should be have atleast {{password?.errors?.minlength?.requiredLength }} characters!</span>
+            <span *ngIf="password?.errors?.maxlength" class="error invalid-feedback">Password should be have maximum {{password?.errors?.maxlength?.requiredLength }} characters!</span>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label">Roles</label>
+            <div class="custom-control custom-radio pl-5" *ngFor="let role of rolesArray; let i = index;" [ngClass]="{'is-invalid': roles?.errors && roles?.touched, 'is-valid': !roles?.errors}" tabindex="1">
+              <input class="custom-control-input" type="radio" id="role{{i}}" value="{{role}}" [checked]="roles?.value[0] === role" (change)="onRoleChange($event.target.value);">
+              <label for="role{{i}}" class="custom-control-label">{{ role | uppercase }}</label>
+            </div>
+            <span *ngIf="roles?.errors?.required" class="error invalid-feedback">Role is required!</span>
+          </div>
+          
+          <div class="form-group col-6">
+            <label class="col-form-label" for="activated">User Activated? <span class="required">*</span> </label>
+            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+              <input type="checkbox" class="custom-control-input" id="activated" formControlName="activated" name="activated" >
+              <label class="custom-control-label" for="activated">
+                <span> {{ activated?.value && activated?.value === true ? '' : 'Not ' }} Activated</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+          <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid">
+            <i class="fa fa-floppy-o fa-fw"></i>
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+
+
+<div class="modal fade" id="modal-default" #userAddressesModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>{{ action === 'create' ? 'Create' : 'Edit' }} User</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="card mb-3 card-shadow" *ngFor="let address of addresses">
+            <div class="card-horizontal">
+              <div class="card-body">
+                <div class="">
+                  <span class="float-left">
+                    <h5>
+                      <span class="badge badge-secondary text-uppercase">{{
+                        address.type
+                      }}</span>
+                    </h5>
+                  </span>
+                  
+                  <span class="text-muted float-right">
+                    <div>{{address?.created_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                  </span>
+                  <div class="clearfix"></div>
+                </div>
+                <strong class="card-title">
+                  {{ address.name + ", " + address.mobile_number }}</strong
+                >
+                <p class="card-text">
+                  {{ address.area_and_street + ", " + address.locality + ", " }}
+                  <br />
+                  {{
+                    address.city +
+                      ", " +
+                      address.state +
+                      ", " +
+                      address.country +
+                      " - " +
+                      address.pin_code
+                  }}
+
+                  <span class="text-muted float-right">
+                    <div>{{address?.created_on?.toDate() | dateAgo }}</div>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+          <ng-container class="m-5" *ngIf="addresses.length === 0">
+            <app-not-found
+              [title]="'No addresses found!'"
+              [description]="'There is no addresss present for this user.'"
+              [showRedirectBtn]="false"
+              [showIcon]="false"
+            ></app-not-found>
+          </ng-container>
+      </div>  
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="modal-default" #deleteUserModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>Delete User Confirmation</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body px-4">
+        <p>Are you sure to delete this user? This process can not be undone.</p>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+        <button type="button" class="btn btn-danger" (click)="deleteUser()">
+          <i class="fa fa-trash fa-fw"></i>
+          Yes, Delete It
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

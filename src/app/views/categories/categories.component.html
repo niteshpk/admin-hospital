@@ -1,0 +1,229 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Categories ({{ totalItems }})</h1>
+      </div>
+      <div class="col-sm-6 text-right">
+        <button type="button" class="btn btn-primary btn-sm" (click)="openCreateModal()">
+          <i class="fas fa-plus fa-fw"></i>
+          New
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /.container-fluid -->
+</section>
+
+<section class="content" *ngIf="loading">
+  <app-loader></app-loader>
+</section>
+
+<section class="content" *ngIf="showNoSearchResultsSection()">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <app-not-found
+      [title]="'No search result found!'"
+      [description]="'Try changing the search filters and search again.'"
+      [showRedirectBtn]="true"
+      [redirectBtnLabel]="'Clear Filters'"
+      [redirectUrl]="'/categories'"
+      [showIcon]="true"
+      (redirectBtnClicked)="reinitCategories()"
+    ></app-not-found>
+  </div>
+</section>
+
+<!-- Main content -->
+<section class="content" *ngIf="showNotFoundSection()">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <app-not-found
+      [title]="'No categories found!'"
+      [description]="'Please add the categories or you may return to dashboard page.'"
+      [showRedirectBtn]="true"
+      [redirectBtnLabel]="'Return To Dashboard'"
+      [redirectUrl]="'/'"
+      [showIcon]="true"
+    ></app-not-found>
+  </div>
+</section>
+
+<!-- Main content -->
+<section class="content" *ngIf="categories?.length && !loading">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <div class="card card-default">
+      <div class="card-header">
+        <h3 class="card-title">Filters</h3>
+
+        <div class="card-tools">
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="!filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-minus"></i></button>
+          <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+      <!-- /.card-header -->
+      <div class="card-body" *ngIf="!filterCollapsed">
+        <div class="row">
+          <div class="form-group col-4">
+            <label class="col-form-label"> Category Visibility </label>
+            <ng-select2
+              [data]="categoryVisibilities"
+              [options]="{
+                multiple: false,
+                closeOnSelect: true,
+                width: '100%'
+              }"
+              [(ngModel)]="filter.visibility"
+              [placeholder]="'Select Category Visibility'"
+              (valueChanged)="filterCategories()"
+              >
+            </ng-select2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body table-responsive p-0">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th width="5%">#</th>
+              <th width="10%" class="text-center">Visibility</th>
+              <th width="30%">Name</th>
+              <th width="15%">Created On</th>
+              <th width="15%">Updated On</th>
+              <th width="15%">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of categories | paginate: { id: 'categoriesPagination', itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }; let i = index; ">
+              <td>{{ currentPage * itemsPerPage - itemsPerPage + i + 1 }}</td>
+              <td class="text-center">
+                <span *ngIf="category?.visibility">
+                  <i class="fa fa-check fa-fw"></i>
+                </span>
+                <span *ngIf="!category?.visibility">
+                  <i class="fa fa-times fa-fw"></i>
+                </span>
+              </td>
+              <td>{{ category?.name }}</td>
+              <td>
+                <small>
+                  <div>{{category?.created_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                  <div>{{category?.created_on?.toDate() | dateAgo }}</div>
+                </small>
+              </td>
+              <td>
+                <small>
+                  <div>{{category?.updated_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                  <div>{{category?.updated_on?.toDate() | dateAgo }}</div>
+                </small>
+              </td>
+              <td>
+                <div>
+                  <button type="button" class="btn btn-outline-primary btn-xs mr-2" (click)="openUpdateModal(category)" >
+                    <i class="fas fa-edit fa-fw"></i> Edit</button>
+
+                  <button type="button" class="btn btn-outline-danger btn-xs" (click)="openDeleteModal(category)">
+                    <i class="fas fa-trash fa-fw"></i> Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- /.card-body -->
+      <div class="card-footer clearfix">
+        <pagination-controls (pageChange)="getCategories($event)" id="categoriesPagination"></pagination-controls>
+      </div>
+    </div>
+  </div>
+  <!-- /.card -->
+</section>
+<!-- /.content -->
+
+<div class="modal fade" id="modal-default" #categoryFormModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="categoryForm" (ngSubmit)="onCategoryFormSubmit()">
+        <div class="modal-header">
+          <h4 class="modal-title">
+            <span>{{ action === 'create' ? 'Create' : 'Edit' }} Category</span> 
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group col-12" *ngIf="action === 'update' && categoryId?.value">
+            <label class="col-form-label" for="categoryId"> Category ID 
+              <span class="required">*</span>
+            </label>
+            <input type="text" class="form-control" id="categoryId" placeholder="Category ID" formControlName="id" [ngClass]="{'is-invalid': categoryId?.errors?.required, 'is-valid': !categoryId?.errors?.required}" disabled>
+            <span *ngIf="categoryId?.errors?.required" class="error invalid-feedback">Category id is required</span>
+          </div>
+          
+          <div class="form-group col-12">
+            <label class="col-form-label" for="categoryName"> Category Name 
+              <span class="required">*</span>
+             </label>
+            <input type="text" class="form-control" id="categoryName" placeholder="Category Name" formControlName="name" [ngClass]="{'is-invalid': categoryName?.errors && categoryName?.touched, 'is-valid': !categoryName?.errors}" tabindex="1">
+            <span *ngIf="categoryName?.errors?.required" class="error invalid-feedback">Category name is required!</span>
+            <span *ngIf="categoryName?.errors?.minlength" class="error invalid-feedback">Category name should be have atleast {{categoryName?.errors?.minlength?.requiredLength }} characters!</span>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label" for="visibility">Category Visiblility? <span class="required">*</span> </label>
+            <div class="custom-control custom-switch custom-switch-off-danger custom-switch-on-success">
+              <input type="checkbox" class="custom-control-input" id="visibility" formControlName="visibility" name="visibility" >
+              <label class="custom-control-label" for="visibility">
+                <span> {{ categoryVisibility?.value && categoryVisibility?.value === true ? 'Visible' : 'Hidden' }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal" tabindex="3"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+          <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid" tabindex="2">
+            <i class="fa fa-floppy-o fa-fw"></i>
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div class="modal fade" id="modal-default" #deleteCategoryModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>Delete Category Confirmation</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body px-4">
+        <p>Are you sure to delete this category? This process can not be undone.</p>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+        <button type="button" class="btn btn-danger" (click)="deleteCategory()">
+          <i class="fa fa-trash fa-fw"></i>
+          Yes, Delete It
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

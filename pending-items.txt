@@ -1,0 +1,11 @@
+- 404 page not found. - done
+- item not found. - done
+- page loading - loader - done
+- restrict the delete/update actions for order,product,category,user -done
+- order status color - red, blue, organge, green - done
+- User address list in modal popup in users list page - done
+- recent 5 users on dashboard - done
+- product status - enable/disble visibility
+- category status - enable/disble visibility
+- order list view total amount
+- user status - enable/disble visibility

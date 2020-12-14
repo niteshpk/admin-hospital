@@ -1,0 +1,166 @@
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1 class="m-0 text-dark">Dashboard</h1>
+      </div>
+      <!-- /.col -->
+    </div>
+    <!-- /.row -->
+  </div>
+  <!-- /.container-fluid -->
+</div>
+<!-- /.content-header -->
+
+<!-- Main content -->
+<section class="content">
+  <div class="container-fluid">
+    <!-- Small boxes (Stat box) -->
+    <div class="row">
+      <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-info">
+          <div class="overlay dark" *ngIf="ordersCountLoading">
+            <div class="spinner-border"></div>
+          </div>
+          <div class="inner">
+            <h3>{{ordersCount}}</h3>
+
+            <p>Total Orders</p>
+          </div>
+          <div class="icon">
+            <i class="ion ion-bag"></i>
+          </div>
+          <a [routerLink]="['/orders']" class="small-box-footer"
+            >More info <i class="fas fa-arrow-circle-right"></i
+          ></a>
+        </div>
+      </div>
+      <!-- ./col -->
+      
+      <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-success">
+          <div class="overlay dark" *ngIf="productsCountLoading">
+            <div class="spinner-border"></div>
+          </div>
+          <div class="inner">
+            <h3>{{productsCount}}</h3>
+
+            <p>Total Products</p>
+          </div>
+          <div class="icon">
+            <i class="ion ion-stats-bars"></i>
+          </div>
+          <a [routerLink]="['/products']" class="small-box-footer"
+            >More info <i class="fas fa-arrow-circle-right"></i
+          ></a>
+        </div>
+      </div>
+      <!-- ./col -->
+      <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-warning">
+          <div class="overlay dark" *ngIf="usersCountLoading">
+            <div class="spinner-border"></div>
+          </div>
+          <div class="inner">
+            <h3>{{usersCount}}</h3>
+
+            <p>Total Users</p>
+          </div>
+          <div class="icon">
+            <i class="ion ion-person-add"></i>
+          </div>
+          <a [routerLink]="['/users']" class="small-box-footer"
+            >More info <i class="fas fa-arrow-circle-right"></i
+          ></a>
+        </div>
+      </div>
+      <!-- ./col -->
+      <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-danger">
+          <div class="overlay dark" *ngIf="categoriesCountLoading">
+            <div class="spinner-border"></div>
+          </div>
+          <div class="inner">
+            <h3>{{categoriesCount}}</h3>
+
+            <p>Total Categories</p>
+          </div>
+          <div class="icon">
+            <i class="ion ion-pie-graph"></i>
+          </div>
+          <a [routerLink]="['/categories']" class="small-box-footer"
+            >More info <i class="fas fa-arrow-circle-right"></i
+          ></a>
+        </div>
+      </div>
+      <!-- ./col -->
+    </div>
+    <div class="row mt-5">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Recent 5 Orders</h3>
+          </div>
+          <!-- /.card-header -->
+          <div class="card-body p-0">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Amount</th>
+                  <th>Address</th>
+                  <th>Created On</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of orders">
+                  <td>{{order?.address?.name}}</td>
+                  <td>
+                    <div>{{order?.order_amount | currency: 'INR'}}</div>
+                    <div>{{order?.products?.length}} items</div>
+                  </td>
+                  <td>
+                    {{ order?.address?.area_and_street + ", " + order?.address?.locality + ", " }}
+                    <br />
+                    {{ order?.address?.city + ", " + order?.address?.state + " - " + order?.address?.pin_code
+                    }}
+                  </td>
+                  <td>
+                    <small>
+                      <div>{{order?.created_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                      <div>{{order?.created_on?.toDate() | dateAgo }}</div>
+                    </small>
+                  </td>
+                  <td>
+                    <span class="badge"
+                      [ngClass]="{
+                        'bg-secondary': order?.status === 'Pending',
+                        'bg-primary': order?.status === 'Confirmed',
+                        'bg-danger': order?.status === 'Cancelled',
+                        'bg-success': order?.status === 'Delivered'
+                      }"
+                    >{{order?.status}}</span>
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-outline-primary btn-xs mr-2" [routerLink]="['/orders/' + order?.id]">
+                      <i class="fas fa-shopping-bag fa-fw"></i> Details
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+      </div>
+    </div>
+  </div>
+</section>
+<!-- /.content -->

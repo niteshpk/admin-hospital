@@ -1,0 +1,205 @@
+
+<section class="content py-5" *ngIf="loading">
+  <app-loader></app-loader>
+</section>
+
+
+<section class="content py-5" *ngIf="!order && !loading">
+  <!-- Default box -->
+  <div class="container-fluid">
+    <app-not-found
+      [title]="'No order found!'"
+      [description]="'Please check the order id given. Meanwhile, you may return to orders page.'"
+      [showRedirectBtn]="true"
+      [redirectBtnLabel]="'Return To Orders'"
+      [redirectUrl]="'/orders'"
+      [showIcon]="true"
+    ></app-not-found>
+  </div>
+</section>
+
+<section *ngIf="order && !loading" class="container pt-3">
+  <div class="row">
+    <div class="col-12 pb-3 buttons">
+      <button class="btn btn-outline-primary float-left" (click)="back()">
+        <i class="fa fa-arrow-left fw"></i>
+        Back
+      </button>
+      <button class="btn btn-outline-danger ml-2" (click)="openDeleteModal()">
+        <i class="fa fa-trash fw"></i>
+        Delete
+      </button>
+      <button class="btn btn-primary float-right" (click)="print()">
+        <i class="fa fa-print fw"></i>
+        Print Order
+      </button>
+
+    </div>
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row header-box">
+
+            <div class="col-md-6">
+              <img
+                src="http://my-footwear-shop.herokuapp.com/assets/images/logo.png"
+                width="220"
+                height="45"
+                class="d-inline-block align-top"
+                alt=""
+              />
+            </div>
+
+            <div class="col-md-6 text-right">
+              <p class="font-weight-bold mb-1">Order ID: #{{ order?.id }}</p>
+              
+              <p class="mb-1">
+                <span class="text-muted">Order Status: </span> {{ order?.status}}
+              </p>
+              
+              <p class="mb-1">
+                <span class="text-muted">Created On: </span> {{ order?.created_on?.toDate() | date:'medium'}}
+              </p>
+            </div>
+          </div>
+
+          <hr class="" />
+
+          <div class="row pb-5 p-5 pt-0">
+            <div class="col-md-6">
+              <p class="font-weight-bold mb-4">Customer Information</p>
+              <p class="mb-1">{{ order?.address?.name }}</p>
+              <p class="mb-1">{{ order?.address?.area_and_street }}, {{ order?.address?.locality }}</p>
+              <p class="mb-1">{{ order?.address?.landmark }},</p>
+              <p class="mb-1">{{ order?.address?.city }} - {{ order?.address?.pin_code }}.</p>
+              <p class="mb-1">{{ order?.address?.state }}, {{ order?.address?.country }}. ({{ order?.address?.type }})</p>
+            </div>
+
+            <div class="col-md-6 text-right">
+              <p class="font-weight-bold mb-4">Payment Details</p>
+              <p class="mb-1">
+                <span class="text-muted">Payment Amount: </span> {{ order?.order_amount | currency: "INR"}}
+              </p>
+              <p class="mb-1">
+                <span class="text-muted">Payment Mode: </span> {{ order?.payment_method | uppercase }}
+              </p>
+              <p class="mb-1">
+                <span class="text-muted">Payment Status: </span> {{ order?.payment_status}}
+              </p>
+              <!-- <p class="mb-1"><span class="text-muted">VAT: </span> 1425782</p>
+              <p class="mb-1">
+                <span class="text-muted">VAT ID: </span> 10253642
+              </p>
+              <p class="mb-1">
+                <span class="text-muted">Payment Type: </span> Root
+              </p>
+              <p class="mb-1">
+                <span class="text-muted">Name: </span> John Doe
+              </p> -->
+            </div>
+          </div>
+
+          <div class="row product-box">
+            <div class="col-md-12">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th class="border-0 text-uppercase small font-weight-bold">
+                      No
+                    </th>
+                    <th class="border-0 text-uppercase small font-weight-bold">
+                      Image
+                    </th>
+                    <th class="border-0 text-uppercase small font-weight-bold">
+                      Item
+                    </th>
+                    <th class="border-0 text-uppercase small font-weight-bold">
+                      Description
+                    </th>
+                    <th class="border-0 text-uppercase small font-weight-bold">
+                      Quantity
+                    </th>
+                    <th class="border-0 text-uppercase small font-weight-bold">
+                      Unit Cost
+                    </th>
+                    <th class="border-0 text-uppercase small font-weight-bold">
+                      Total
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let product of order?.products; let index=index;">
+                    <td>{{ index + 1 }}</td>
+                    <td>
+                      <div class="">
+                        <img
+                          src="{{ 'http://my-footwear-shop.herokuapp.com/' + product?.image }}"
+                          alt="Product Image"
+                          class="img-fluid img-thumbnail rounded"
+                          width="100" height="100"
+                        />
+                      </div>
+                    </td>
+                    <td>{{ product?.name }}</td>
+                    <td>{{ product?.description | ellipsis: 25}}</td>
+                    <td>{{ product?.quantity }}</td>
+                    <td>{{ product?.price | currency: "INR" }}</td>
+                    <td>{{ product?.total | currency: "INR" }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="d-flex flex-row-reverse bg-dark text-white p-4">
+            <div class="py-3 px-5 text-right">
+              <div class="mb-2">Order Amount</div>
+              <div class="h2 font-weight-light">{{ order?.order_amount | currency: "INR" }}</div>
+            </div>
+
+            <div class="py-3 px-5 text-right" *ngIf="order?.discount_amount">
+              <div class="mb-2">Discount Amount</div>
+              <div class="h2 font-weight-light">{{ order?.discount_amount | currency: "INR" }}</div>
+            </div>
+
+            <div class="py-3 px-5 text-right">
+              <div class="mb-2">Sub-Total amount</div>
+              <div class="h2 font-weight-light">{{ order?.sub_total | currency: "INR" }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal fade" id="modal-default" #deleteOrderModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>Delete Order Confirmation</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body px-4">
+        <p>Are you sure to delete this category? This process can not be undone.</p>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          <i class="fa fa-times fa-fw"></i>
+          <i class="fa fa-times fa-fw"></i>
+          Close</button>
+        <button type="button" class="btn btn-danger" (click)="deleteOrder()">
+          <i class="fa fa-trash fa-fw"></i>
+          <i class="fa fa-trash fa-fw"></i>
+          Yes, Delete It
+        </button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>

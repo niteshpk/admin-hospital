@@ -1,0 +1,105 @@
+<div class="login-box">
+  <div class="login-logo">
+    <a [routerLink]="['/']"><b>Amazing Hospital</b></a>
+  </div>
+  <!-- /.login-logo -->
+  <div class="card">
+    <div class="card-body login-card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+        <div class="input-group mb-3">
+          <input
+            type="email"
+            class="form-control"
+            placeholder="Email"
+            formControlName="username"
+            [ngClass]="{
+              'is-invalid': username?.errors && username?.touched,
+              'is-valid': !username?.errors
+            }"
+            tabindex="1"
+          />
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+          <span
+            *ngIf="username?.errors?.required"
+            class="error invalid-feedback"
+            >Email is required</span
+          >
+          <span
+            *ngIf="username?.errors?.minlength"
+            class="error invalid-feedback"
+            >Email should be have atleast
+            {{ username?.errors?.minlength?.requiredLength }} characters!</span
+          >
+          <span *ngIf="username?.errors?.pattern" class="error invalid-feedback"
+            >Email is invalid</span
+          >
+        </div>
+        <div class="input-group mb-3">
+          <input
+            type="password"
+            class="form-control"
+            placeholder="Password"
+            formControlName="password"
+            [ngClass]="{
+              'is-invalid': password?.errors && password?.touched,
+              'is-valid': !password?.errors
+            }"
+            tabindex="1"
+          />
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+          <span
+            *ngIf="password?.errors?.required"
+            class="error invalid-feedback"
+            >Password is required!</span
+          >
+          <span
+            *ngIf="password?.errors?.minlength"
+            class="error invalid-feedback"
+            >Password should be have atleast
+            {{ password?.errors?.minlength?.requiredLength }} characters!</span
+          >
+          <span
+            *ngIf="password?.errors?.maxlength"
+            class="error invalid-feedback"
+            >Password should be have maximum
+            {{ password?.errors?.maxlength?.requiredLength }} characters!</span
+          >
+        </div>
+        <div class="row mb-3">
+          <!-- /.col -->
+          <div class="col-12">
+            <button
+              type="submit"
+              class="btn btn-block btn-primary"
+              [class.disabled]="isAuthLoading"
+            >
+              <span *ngIf="!isAuthLoading">Sign In</span>
+              <span
+                *ngIf="isAuthLoading"
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
+            </button>
+          </div>
+          <!-- /.col -->
+        </div>
+      </form>
+
+      <!-- <p class="mb-1">
+        <a [routerLink]="['/forgot-password']">I forgot my password</a>
+      </p> -->
+    </div>
+    <!-- /.login-card-body -->
+  </div>
+</div>

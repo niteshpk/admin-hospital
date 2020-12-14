@@ -1,0 +1,20 @@
+.center-block {
+  margin-top: 100px;
+  margin-bottom: 100px;
+  display: block;
+  text-align: center;
+}
+
+
+.error-page {
+  width: 100%;
+  text-align: center;
+}
+
+.error-page >.error-content {
+  margin-left: 0;
+}
+
+.error-page > .headline {
+  float: none;
+}

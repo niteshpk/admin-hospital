@@ -1,0 +1,13 @@
+.product-box {
+    padding: 0 3rem 3rem 3rem;
+}
+.header-box {
+    padding: 3rem 3rem 0 3rem;
+}
+
+/* override styles when printing */
+@media print {
+    .buttons {
+        display: none;
+    }
+}

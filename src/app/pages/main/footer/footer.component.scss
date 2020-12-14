@@ -1,0 +1,7 @@
+
+/* override styles when printing */
+@media print {
+    .main-footer {
+        display: none;
+    }
+}

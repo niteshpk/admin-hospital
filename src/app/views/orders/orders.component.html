@@ -1,0 +1,398 @@
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Orders ({{ totalItems }})</h1>
+        </div>
+      </div>
+    </div>
+    <!-- /.container-fluid -->
+  </section>
+
+  <section class="content" *ngIf="loading">
+    <app-loader></app-loader>
+  </section>
+  
+  <section class="content" *ngIf="showNotFoundSection()">
+    <!-- Default box -->
+    <div class="container-fluid">
+      <app-not-found
+        [title]="'No orders found!'"
+        [description]="'Please encourage the users the place the orders. Meanwhile, you may return to dashboard page.'"
+        [showRedirectBtn]="true"
+        [redirectBtnLabel]="'Return To Dashboard'"
+        [redirectUrl]="'/'"
+        [showIcon]="true"
+      ></app-not-found>
+    </div>
+  </section>
+
+  <section class="content" *ngIf="showNoSearchResultsSection()">
+    <!-- Default box -->
+    <div class="container-fluid">
+      <app-not-found
+        [title]="'No search result found!'"
+        [description]="'Try changing the search filters and search again.'"
+        [showRedirectBtn]="true"
+        [redirectBtnLabel]="'Clear Filters'"
+        [redirectUrl]="'/orders'"
+        [showIcon]="true"
+        (redirectBtnClicked)="reinitOrders()"
+      ></app-not-found>
+    </div>
+  </section>
+
+
+  <!-- Main content -->
+  <section class="content"  *ngIf="orders?.length && !loading">
+    <!-- Default box -->
+    <div class="container-fluid">
+      <div class="card card-default">
+        <div class="card-header">
+          <h3 class="card-title">Filters</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="!filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-minus"></i></button>
+            <button type="button" class="btn btn-tool" data-card-widget="collapse" *ngIf="filterCollapsed" (click)="filterCardToggle()"><i class="fas fa-plus"></i></button>
+          </div>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body" *ngIf="!filterCollapsed">
+          <div class="row">
+            <div class="form-group col-4">
+              <label class="col-form-label"> User </label>
+              <ng-select2
+                *ngIf="users?.length"
+                [data]="users"
+                [options]="{
+                  multiple: false,
+                  closeOnSelect: true,
+                  width: '100%'
+                }"
+                [(ngModel)]="filter.user"
+                [placeholder]="'Select user'"
+                (valueChanged)="filterOrders()"
+                >
+              </ng-select2>
+            </div>
+            <div class="form-group col-4">
+              <label class="col-form-label"> Order Status </label>
+              <ng-select2
+                [data]="orderStatuses"
+                [options]="{
+                  multiple: false,
+                  closeOnSelect: true,
+                  width: '100%'
+                }"
+                [(ngModel)]="filter.order_status"
+                [placeholder]="'Select order status'"
+                (valueChanged)="filterOrders()"
+                >
+              </ng-select2>
+            </div>
+            <div class="form-group col-4">
+              <label class="col-form-label"> Payment Status </label>
+              <ng-select2
+                [data]="paymentStatuses"
+                [options]="{
+                  multiple: false,
+                  closeOnSelect: true,
+                  width: '100%'
+                }"
+                [(ngModel)]="filter.payment_status"
+                [placeholder]="'Select payment status'"
+                (valueChanged)="filterOrders()"
+                >
+              </ng-select2>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body table-responsive p-0">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th width="5%">#</th>     
+                <th width="10%">Order</th>        
+                <th width="30%">User Details</th>
+                <th width="10%">Payment</th>   
+                <th width="15%">Created On</th>
+                <th width="15%">Updated On</th>
+                <th width="15%">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of orders | paginate: { id: 'ordersPagination', itemsPerPage: itemsPerPage, currentPage: currentPage, totalItems: totalItems }; let i = index; ">
+                <td>{{ currentPage * itemsPerPage - itemsPerPage + i + 1 }}</td>
+                <td>
+                  <span class="badge"
+                    [ngClass]="{
+                      'bg-secondary': order?.status === 'Pending',
+                      'bg-primary': order?.status === 'Confirmed',
+                      'bg-danger': order?.status === 'Cancelled',
+                      'bg-success': order?.status === 'Delivered'
+                    }"
+                  >{{order?.status}}</span>
+                  <div>{{order?.order_amount | currency: 'INR'}}</div>
+                  <div>{{order?.products?.length}} items</div>
+                </td>
+                <td>
+
+                  <div>{{order?.address?.name}}</div>
+                  <div>
+                    {{ order?.address?.area_and_street + ", " + order?.address?.locality + ", " }}
+                  <br />
+                  {{ order?.address?.city + ", " + order?.address?.state + " - " + order?.address?.pin_code
+                  }}
+                  </div>
+                </td>
+                <td>
+                  <div><span class="badge"
+                    [ngClass]="{
+                      'bg-secondary': order?.payment_status === 'Pending',
+                      'bg-primary': order?.payment_status === 'Refunded',
+                      'bg-danger': order?.payment_status === 'Cancelled',
+                      'bg-success': order?.payment_status === 'Received'
+                    }"
+                  >{{order?.payment_status}}</span></div>
+                  <div>{{order?.order_amount | currency: 'INR'}}</div>
+                  <div>{{order?.payment_method | uppercase }}</div>
+                </td>
+                <td>
+                  <small>
+                    <div>{{order?.created_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                    <div>{{order?.created_on?.toDate() | dateAgo }}</div>
+                  </small>                  
+                </td>
+                <td>
+                  <small>
+                    <div>{{order?.updated_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
+                    <div>{{order?.updated_on?.toDate() | dateAgo }}</div>
+                  </small>                  
+                </td>
+                <td>
+                  <div>
+                    <button type="button" class="btn btn-outline-primary btn-xs mr-2" (click)="openProductModal(order)" >
+                      <i class="fas fa-gift fa-fw"></i> Product
+                    </button>
+
+                    <button type="button" class="btn btn-outline-primary btn-xs mr-2" (click)="openCustomerModal(order)" >
+                      <i class="fas fa-user fa-fw"></i> User
+                    </button>
+
+                    <button type="button" class="btn btn-outline-primary btn-xs mr-2" [routerLink]="['/orders/' + order?.id]">
+                      <i class="fas fa-shopping-bag fa-fw"></i> Details
+                    </button>
+
+                    <button type="button" class="btn btn-outline-primary btn-xs mr-2" (click)="openUpdateStatusModal(order)" *ngIf="['Pending', 'Confirmed'].includes(order?.status) || ['Pending'].includes(order?.payment_status)">
+                      <i class="fas fa-mail-forward fa-fw"></i> Change Status
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer clearfix">
+          <pagination-controls (pageChange)="getOrders($event)" id="ordersPagination"></pagination-controls>
+        </div>
+      </div>
+    </div>
+    <!-- /.card -->
+  </section>
+  <!-- /.content -->
+
+<div class="modal fade" id="modal-default" #userModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>User Details</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body row">
+        <div class="form-group col-6">
+          <label class="col-form-label" for="userId"> User ID </label>
+          <input type="text" class="form-control" id="userId" placeholder="User ID" name="id" [value]="order?.user?.id" disabled>
+        </div>
+        
+        <div class="form-group col-6">
+          <label class="col-form-label" for="username">Username </label>
+          <input type="text" class="form-control" id="username" name="username" placeholder="Username" [value]="order?.user?.username" disabled>
+        </div>
+        
+        <div class="form-group col-6">
+          <label class="col-form-label" for="name">Name </label>
+          <input type="text" class="form-control" id="name" name="name" placeholder="Name" [value]="order?.address?.name" disabled>
+        </div>
+        
+        <div class="form-group col-6">
+          <label class="col-form-label" for="area_and_street">Area and Street </label>
+          <input type="text" class="form-control" id="area_and_street" name="area_and_street" placeholder="Area and Street" [value]="order?.address?.area_and_street" disabled>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="col-form-label" for="locality">Locality </label>
+          <input type="text" class="form-control" id="locality" name="locality" placeholder="Locality" [value]="order?.address?.locality" disabled>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="col-form-label" for="landmark">Landmark </label>
+          <input type="text" class="form-control" id="landmark" name="landmark" placeholder="Landmark" [value]="order?.address?.landmark" disabled>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="col-form-label" for="city">City </label>
+          <input type="text" class="form-control" id="city" name="city" placeholder="City" [value]="order?.address?.city" disabled>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="col-form-label" for="pin_code">Pin code </label>
+          <input type="text" class="form-control" id="pin_code" name="pin_code" placeholder="Pin code" [value]="order?.address?.pin_code" disabled>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="col-form-label" for="state">State </label>
+          <input type="text" class="form-control" id="state" name="state" placeholder="State" [value]="order?.address?.state" disabled>
+        </div>
+
+        <div class="form-group col-6">
+          <label class="col-form-label" for="country">Country </label>
+          <input type="text" class="form-control" id="country" name="country" placeholder="Country" [value]="order?.address?.country" disabled>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-default" #productModal>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>Product Details</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body row"> 
+        <div class="col-md-12">
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="border-0 text-uppercase small font-weight-bold">
+                  No
+                </th>
+                <th class="border-0 text-uppercase small font-weight-bold">
+                  Image
+                </th>
+                <th class="border-0 text-uppercase small font-weight-bold">
+                  Item
+                </th>
+                <th class="border-0 text-uppercase small font-weight-bold">
+                  Quantity
+                </th>
+                <th class="border-0 text-uppercase small font-weight-bold">
+                  Unit Cost
+                </th>
+                <th class="border-0 text-uppercase small font-weight-bold">
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of order?.products; let index=index;">
+                <td>{{ index + 1 }}</td>
+                <td>
+                  <div class="">
+                    <img
+                      src="{{ 'http://my-footwear-shop.herokuapp.com/' + product?.image }}"
+                      alt="Product Image"
+                      class="img-fluid img-thumbnail rounded"
+                      width="100" height="100"
+                    />
+                  </div>
+                </td>
+                <td>
+                  <div>{{ product?.name }}</div>
+                  <small>{{ product?.description | ellipsis: 30}}</small>
+                </td>
+                <td>{{ product?.quantity }}</td>
+                <td>{{ product?.price | currency: "INR" }}</td>
+                <td>{{ product?.total | currency: "INR" }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-default" #changeStatusModal>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <span>Change Order & Payment Status</span> 
+        </h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="form-group col-6">
+            <label class="col-form-label" for="currentOrderStatus"> Current Order Status</label>
+            <input type="text" class="form-control" id="currentOrderStatus" [value]="order?.status" disabled>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label" for="newOrderStatus">New Order Status</label>
+            <select class="form-control" id="newOrderStatus" (change)="newOrderStatus=$event?.target?.value;">
+              <option [value]="''" >Select</option>
+              <option *ngFor="let status of changeOrderStatuses" [value]="status" >{{ status}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="form-group col-6">
+            <label class="col-form-label" for="currentPaymentStatus"> Current Payment Status</label>
+            <input type="text" class="form-control" id="currentPaymentStatus" [value]="order?.payment_status" disabled>
+          </div>
+
+          <div class="form-group col-6">
+            <label class="col-form-label" for="newPaymentStatus">New Payment Status</label>
+            <select class="form-control" id="newPaymentStatus" (change)="newPaymentStatus=$event?.target?.value;">
+              <option [value]="''" >Select</option>
+              <option *ngFor="let status of changePaymentStatuses" [value]="status" >{{ status}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times fa-fw"></i>
+          Close</button>
+        <button type="button" class="btn btn-primary" (click)="updateStatus()" *ngIf="newOrderStatus || newPaymentStatus">
+          <i class="fa fa-floppy-o fa-fw"></i>
+          Update Status
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
