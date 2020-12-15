@@ -39,6 +39,10 @@ export class AuthService {
             observer.next('User not activated yet!');
             return false;
           }
+          if (!user.roles.includes('admin')) {
+            observer.next('You are not allowed to login in admin area!');
+            return false;
+          }
           delete user.password;
           user.authData = window.btoa(username + ':' + password);
           user.image = 'assets/img/user2-160x160.jpg';
