@@ -4,6 +4,9 @@ export class User {
   password: string;
   firstName: string;
   lastName: string;
+  gender: string;
+  date_of_birth: string;
+  mobile_number: string;
   authData?: string;
   roles?: string[];
   activated?: boolean;

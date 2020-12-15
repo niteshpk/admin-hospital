@@ -11,9 +11,9 @@ export class UserService extends ApiService {
   }
 
   getUsers(filter?) {
-    const userList = [];
     return new Observable((observer) => {
       db.collection('/users').onSnapshot((snapshot) => {
+        const userList = [];
         snapshot.docs.map((doc) => {
           const user = Object.assign(doc.data(), { id: doc.id });
 
@@ -71,6 +71,9 @@ export class UserService extends ApiService {
   }
 
   updateUser(user) {
+    if (!user.created_on) {
+      user.created_on = serverTimestamp;
+    }
     if (!user.updated_on) {
       user.updated_on = serverTimestamp;
     }

@@ -17,7 +17,7 @@ import { MessagesDropdownMenuComponent } from './pages/main/header/messages-drop
 import { NotificationsDropdownMenuComponent } from './pages/main/header/notifications-dropdown-menu/notifications-dropdown-menu.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
-import {NgxPaginationModule} from 'ngx-pagination';
+import { NgxPaginationModule } from 'ngx-pagination';
 import { CommonModule, registerLocaleData } from '@angular/common';
 import localeEn from '@angular/common/locales/en';
 import { UserDropdownMenuComponent } from './pages/main/header/user-dropdown-menu/user-dropdown-menu.component';
@@ -31,6 +31,7 @@ import { NotFoundComponent } from './views/not-found/not-found.component';
 import { LoaderComponent } from './views/loader/loader.component';
 import { DateAgoPipe } from './utils/pipes/date-ago.pipe';
 import { NgSelect2Module } from 'ng-select2';
+import { PackagesComponent } from './views/packages/packages.component';
 
 registerLocaleData(localeEn, 'en-EN');
 
@@ -47,7 +48,7 @@ registerLocaleData(localeEn, 'en-EN');
     MessagesDropdownMenuComponent,
     NotificationsDropdownMenuComponent,
     UserDropdownMenuComponent,
-    CategoriesComponent,    
+    CategoriesComponent,
     ProductsComponent,
     UsersComponent,
     OrdersComponent,
@@ -56,6 +57,7 @@ registerLocaleData(localeEn, 'en-EN');
     NotFoundComponent,
     LoaderComponent,
     DateAgoPipe,
+    PackagesComponent,
   ],
   imports: [
     CommonModule,
@@ -71,7 +73,7 @@ registerLocaleData(localeEn, 'en-EN');
     }),
     NgbModule,
     FormsModule,
-    NgxPaginationModule
+    NgxPaginationModule,
   ],
   providers: [EllipsisPipe],
   bootstrap: [AppComponent],

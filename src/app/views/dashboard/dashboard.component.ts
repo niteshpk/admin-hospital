@@ -21,7 +21,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
-    private orderService: OrderService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit() {
@@ -33,8 +33,9 @@ export class DashboardComponent implements OnInit {
       this.productsCount = response;
       this.productsCountLoading = false;
     });
-    this.dashboardService.getUsersCount().subscribe((response) => {
-      this.usersCount = response;
+    this.dashboardService.getUsersCount().subscribe((response: number) => {
+      // Remove logged in user's count from total users
+      this.usersCount = response - 1;
       this.usersCountLoading = false;
     });
     this.dashboardService.getCategoriesCount().subscribe((response) => {

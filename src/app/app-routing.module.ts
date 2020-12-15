@@ -12,6 +12,7 @@ import { UsersComponent } from './views/users/users.component';
 import { OrdersComponent } from './views/orders/orders.component';
 import { OrderDetailsComponent } from './views/orders/order-details/order-details.component';
 import { NotFoundComponent } from './views/not-found/not-found.component';
+import { PackagesComponent } from './views/packages/packages.component';
 
 const routes: Routes = [
   {
@@ -43,6 +44,10 @@ const routes: Routes = [
       {
         path: 'orders',
         component: OrdersComponent,
+      },
+      {
+        path: 'packages',
+        component: PackagesComponent,
       },
       {
         path: '',
