@@ -5,7 +5,9 @@ export class User {
   firstName: string;
   lastName: string;
   gender: string;
+  // tslint:disable-next-line: variable-name
   date_of_birth: string;
+  // tslint:disable-next-line: variable-name
   mobile_number: string;
   authData?: string;
   roles?: string[];

@@ -162,9 +162,9 @@ export class PackageService extends ApiService {
       return;
     }
 
-    const original_amount = Number(pkg.original_amount);
-    const discountPrice = original_amount - Number(pkg.offer_amount);
-    const discountPercentage = (discountPrice / original_amount) * 100;
+    const originalAmount = Number(pkg.original_amount);
+    const discountPrice = originalAmount - Number(pkg.offer_amount);
+    const discountPercentage = (discountPrice / originalAmount) * 100;
 
     return Math.floor(discountPercentage + Number.EPSILON).toFixed(0);
   }
