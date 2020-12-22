@@ -24,7 +24,7 @@
             <div class="spinner-border"></div>
           </div>
           <div class="inner">
-            <h3>{{ordersCount}}</h3>
+            <h3>{{ ordersCount }}</h3>
 
             <p>Total Orders</p>
           </div>
@@ -37,7 +37,7 @@
         </div>
       </div>
       <!-- ./col -->
-      
+
       <div class="col-lg-3 col-6">
         <!-- small box -->
         <div class="small-box bg-success">
@@ -45,7 +45,7 @@
             <div class="spinner-border"></div>
           </div>
           <div class="inner">
-            <h3>{{productsCount}}</h3>
+            <h3>{{ productsCount }}</h3>
 
             <p>Total Products</p>
           </div>
@@ -65,7 +65,7 @@
             <div class="spinner-border"></div>
           </div>
           <div class="inner">
-            <h3>{{usersCount}}</h3>
+            <h3>{{ usersCount }}</h3>
 
             <p>Total Users</p>
           </div>
@@ -85,7 +85,7 @@
             <div class="spinner-border"></div>
           </div>
           <div class="inner">
-            <h3>{{categoriesCount}}</h3>
+            <h3>{{ categoriesCount }}</h3>
 
             <p>Total Categories</p>
           </div>
@@ -110,6 +110,7 @@
             <table class="table">
               <thead>
                 <tr>
+                  <th width="5%">#</th>
                   <th>Name</th>
                   <th>Amount</th>
                   <th>Address</th>
@@ -119,38 +120,156 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let order of orders">
-                  <td>{{order?.address?.name}}</td>
+                <tr *ngFor="let order of orders; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ order?.address?.name }}</td>
                   <td>
-                    <div>{{order?.order_amount | currency: 'INR'}}</div>
-                    <div>{{order?.products?.length}} items</div>
+                    <div>{{ order?.order_amount | currency: "INR" }}</div>
+                    <div>{{ order?.products?.length }} items</div>
                   </td>
                   <td>
-                    {{ order?.address?.area_and_street + ", " + order?.address?.locality + ", " }}
+                    {{
+                      order?.address?.area_and_street +
+                        ", " +
+                        order?.address?.locality +
+                        ", "
+                    }}
                     <br />
-                    {{ order?.address?.city + ", " + order?.address?.state + " - " + order?.address?.pin_code
+                    {{
+                      order?.address?.city +
+                        ", " +
+                        order?.address?.state +
+                        " - " +
+                        order?.address?.pin_code
                     }}
                   </td>
                   <td>
                     <small>
-                      <div>{{order?.created_on?.toDate() | date:'MMM d, yyyy, h:mm a' }}</div>
-                      <div>{{order?.created_on?.toDate() | dateAgo }}</div>
+                      <div>
+                        {{
+                          order?.created_on?.toDate()
+                            | date: "MMM d, yyyy, h:mm a"
+                        }}
+                      </div>
+                      <div>{{ order?.created_on?.toDate() | dateAgo }}</div>
                     </small>
                   </td>
                   <td>
-                    <span class="badge"
+                    <span
+                      class="badge"
                       [ngClass]="{
                         'bg-secondary': order?.status === 'Pending',
                         'bg-primary': order?.status === 'Confirmed',
                         'bg-danger': order?.status === 'Cancelled',
                         'bg-success': order?.status === 'Delivered'
                       }"
-                    >{{order?.status}}</span>
+                      >{{ order?.status }}</span
+                    >
                   </td>
                   <td>
-                    <button type="button" class="btn btn-outline-primary btn-xs mr-2" [routerLink]="['/orders/' + order?.id]">
+                    <button
+                      type="button"
+                      class="btn btn-outline-primary btn-xs mr-2"
+                      [routerLink]="['/orders/' + order?.id]"
+                    >
                       <i class="fas fa-shopping-bag fa-fw"></i> Details
                     </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+      </div>
+    </div>
+    <div class="row mt-5">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Recent 5 Logged In Users</h3>
+          </div>
+          <!-- /.card-header -->
+          <div class="card-body p-0">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th width="3%">#</th>
+                  <th width="5%" class="text-center">Activated</th>
+                  <th width="5%">Roles</th>
+                  <th width="20%">Username</th>
+                  <th width="12%">Created On</th>
+                  <th width="12%">Updated On</th>
+                  <th width="12%">Last Login</th>
+                  <th width="10%">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td class="text-center">
+                    <span *ngIf="user?.activated">
+                      <i class="fa fa-check fa-fw"></i>
+                    </span>
+                    <span *ngIf="!user?.activated">
+                      <i class="fa fa-times fa-fw"></i>
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      class="right badge badge-primary"
+                      *ngFor="let role of user?.roles"
+                      >{{ role | uppercase }}</span
+                    >
+                  </td>
+                  <td>
+                    <div>{{ user?.firstName + " " + user?.lastName }}</div>
+                    <div>{{ user?.username }}</div>
+                  </td>
+                  <td>
+                    <small>
+                      <div>
+                        {{
+                          user?.created_on?.toDate()
+                            | date: "MMM d, yyyy, h:mm a"
+                        }}
+                      </div>
+                      <div>{{ user?.created_on?.toDate() | dateAgo }}</div>
+                    </small>
+                  </td>
+                  <td>
+                    <small>
+                      <div>
+                        {{
+                          user?.updated_on?.toDate()
+                            | date: "MMM d, yyyy, h:mm a"
+                        }}
+                      </div>
+                      <div>{{ user?.updated_on?.toDate() | dateAgo }}</div>
+                    </small>
+                  </td>
+                  <td>
+                    <small>
+                      <div>
+                        {{
+                          user?.last_login_on?.toDate()
+                            | date: "MMM d, yyyy, h:mm a"
+                        }}
+                      </div>
+                      <div>{{ user?.last_login_on?.toDate() | dateAgo }}</div>
+                    </small>
+                  </td>
+                  <td>
+                    <div>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-xs mr-2"
+                        (click)="openUserProfile(user)"
+                      >
+                        <i class="fas fa-eye fa-fw"></i> Details
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </tbody>

@@ -152,4 +152,25 @@ export class UserService extends ApiService {
         });
     });
   }
+
+  getRecentLoggedInUsers(count) {
+    return new Observable((observer) => {
+      db.collection('users')
+        .orderBy('last_login_on', 'desc')
+        .get()
+        .then((querySnapshot) => {
+          const users = [];
+          if (querySnapshot.docs.length) {
+            const usersTemp = _.slice(querySnapshot.docs, 0, count);
+            _.map(usersTemp, (snapshot) => {
+              users.push(Object.assign(snapshot.data(), { id: snapshot.id }));
+            });
+          }
+          observer.next(users);
+        })
+        .catch((error) => {
+          observer.error(new Error(error));
+        });
+    });
+  }
 }

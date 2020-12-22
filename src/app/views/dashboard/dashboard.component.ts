@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { DashboardService } from 'src/app/utils/services/dashboard.service';
 import { OrderService } from 'src/app/utils/services/order.service';
 import * as _ from 'lodash';
+import { Router } from '@angular/router';
+import { UserService } from 'src/app/utils/services/user.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,10 +20,13 @@ export class DashboardComponent implements OnInit {
   usersCountLoading = true;
   categoriesCountLoading = true;
   orders: any;
+  users: any;
 
   constructor(
     private dashboardService: DashboardService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private userService: UserService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -33,9 +38,8 @@ export class DashboardComponent implements OnInit {
       this.productsCount = response;
       this.productsCountLoading = false;
     });
-    this.dashboardService.getUsersCount().subscribe((response: number) => {
-      // Remove logged in user's count from total users
-      this.usersCount = response - 1;
+    this.dashboardService.getUsersCount().subscribe((response) => {
+      this.usersCount = response;
       this.usersCountLoading = false;
     });
     this.dashboardService.getCategoriesCount().subscribe((response) => {
@@ -45,5 +49,12 @@ export class DashboardComponent implements OnInit {
     this.orderService.getOrders().subscribe((orders) => {
       this.orders = _.slice(orders, 0, 5);
     });
+    this.userService.getRecentLoggedInUsers(5).subscribe((users) => {
+      this.users = users;
+    });
+  }
+
+  openUserProfile(user) {
+    this.router.navigate(['/profile/' + user.id]);
   }
 }

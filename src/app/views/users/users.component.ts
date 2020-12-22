@@ -17,6 +17,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Select2OptionData } from 'ng-select2';
+import { Router } from '@angular/router';
 declare var jQuery: any;
 
 @Component({
@@ -88,7 +89,8 @@ export class UsersComponent implements OnInit {
     private authService: AuthService,
     private userService: UserService,
     private fb: FormBuilder,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private router: Router
   ) {}
 
   resetFilters() {
@@ -99,6 +101,10 @@ export class UsersComponent implements OnInit {
     };
     this.currentPage = 1;
     this.totalItems = 0;
+  }
+
+  openUserProfile(user) {
+    this.router.navigate(['/profile/' + user.id]);
   }
 
   showNotFoundSection() {
