@@ -216,6 +216,7 @@
                     type="button"
                     class="btn btn-outline-danger btn-xs mr-2"
                     (click)="openDeleteModal(user)"
+                    *ngIf="loggedInUser?.id !== user?.id"
                   >
                     <i class="fas fa-trash fa-fw"></i> Delete
                   </button>
@@ -224,6 +225,7 @@
                     type="button"
                     class="btn btn-outline-info btn-xs"
                     (click)="openAddressesModal(user)"
+                    *ngIf="loggedInUser?.id !== user?.id"
                   >
                     <i class="fas fa-map fa-fw"></i> Records
                   </button>

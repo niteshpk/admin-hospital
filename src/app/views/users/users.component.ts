@@ -89,12 +89,7 @@ export class UsersComponent implements OnInit {
     private userService: UserService,
     private fb: FormBuilder,
     private renderer: Renderer2
-  ) {
-    this.resetFilters();
-    this.loggedInUser = this.authService.userValue;
-    this.setFilterValues();
-    this.getUsers(this.currentPage);
-  }
+  ) {}
 
   resetFilters() {
     this.filter = {
@@ -129,6 +124,12 @@ export class UsersComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.resetFilters();
+    this.authService.user$.subscribe((user) => {
+      this.loggedInUser = user;
+    });
+    this.setFilterValues();
+    this.getUsers(this.currentPage);
     this.userForm = this.fb.group({
       id: new FormControl(''),
       username: new FormControl('', [
@@ -250,7 +251,6 @@ export class UsersComponent implements OnInit {
   openUpdateModal(user) {
     this.action = 'update';
     this.userForm.patchValue(this.getUserObject(user, true));
-    console.log(this.userForm);
     this.userForm.get('id').setValidators([Validators.required]);
     jQuery(this.userFormModal.nativeElement).modal('show');
   }
@@ -274,9 +274,7 @@ export class UsersComponent implements OnInit {
     this.users = [];
     this.totalItems = 0;
     this.userService.getUsers(this.filter).subscribe((response) => {
-      this.users = _.filter(response, (u) => {
-        return u.id !== this.loggedInUser.id;
-      });
+      this.users = response;
       this.totalItems = this.users.length;
       this.currentPage = currentPage;
       this.loading = false;
@@ -302,6 +300,10 @@ export class UsersComponent implements OnInit {
     }
 
     this.userService.updateUser(this.userForm.value).subscribe((response) => {
+      if (this.userForm.value.id === this.loggedInUser.id) {
+        // Set local storage
+        this.authService.setLocalStorage(this.userForm.value);
+      }
       jQuery(this.userFormModal.nativeElement).modal('hide');
       this.toastr.success('User updated successfully!', 'Successful');
       this.reinitUsers();

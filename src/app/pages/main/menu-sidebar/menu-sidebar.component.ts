@@ -17,11 +17,13 @@ export class MenuSidebarComponent implements OnInit, AfterViewInit {
   @ViewChild('mainSidebar', { static: false }) mainSidebar;
   @Output() mainSidebarHeight: EventEmitter<any> = new EventEmitter<any>();
   user: any;
-  constructor(public authService: AuthService) {
-    this.user = this.authService.userValue;
-  }
+  constructor(public authService: AuthService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.authService.user$.subscribe((user) => {
+      this.user = user;
+    });
+  }
 
   ngAfterViewInit() {
     this.mainSidebarHeight.emit(this.mainSidebar.nativeElement.offsetHeight);

@@ -15,9 +15,8 @@ export class PackageService extends ApiService {
 
   getPackages(filter?) {
     return new Observable((observer) => {
-      let categories;
-      this.categoryService.getCategories().subscribe((data) => {
-        categories = data;
+      this.categoryService.getCategories().subscribe((data: any) => {
+        const categories = data;
 
         db.collection('/packages').onSnapshot((snapshot) => {
           const packages = snapshot.docs.map((doc) => {

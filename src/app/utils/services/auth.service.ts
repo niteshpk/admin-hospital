@@ -1,21 +1,20 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import db from './firebase';
+import { BehaviorSubject, Observable } from 'rxjs';
+import db, { serverTimestamp } from './firebase';
 import { User } from '../models';
-
-const USER_FIELD = 'hospital-admin-user';
+import * as _ from 'lodash';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private userSubject: BehaviorSubject<any>;
-  public user: Observable<User>;
+  public user$: Observable<User>;
 
   constructor(private router: Router) {
     this.userSubject = new BehaviorSubject<User>(
-      JSON.parse(localStorage.getItem(USER_FIELD))
+      JSON.parse(localStorage.getItem('admin-user'))
     );
-    this.user = this.userSubject.asObservable();
+    this.user$ = this.userSubject.asObservable();
   }
 
   public get userValue(): User {
@@ -34,7 +33,7 @@ export class AuthService {
             observer.next('Invalid credentials');
             return false;
           }
-          const user = Object.assign(doc.data(), { id: doc.id });
+          const user: any = { ...doc.data(), id: doc.id };
           if (!user.activated) {
             observer.next('User not activated yet!');
             return false;
@@ -43,12 +42,38 @@ export class AuthService {
             observer.next('You are not allowed to login in admin area!');
             return false;
           }
-          delete user.password;
-          user.authData = window.btoa(username + ':' + password);
-          user.image = 'assets/img/user2-160x160.jpg';
-          localStorage.setItem(USER_FIELD, JSON.stringify(user));
-          this.userSubject.next(user);
+          // Set local storage
+          this.setLocalStorage(user);
+
           observer.next(user);
+
+          // Update last login timestamp
+          this.updateLastLogInOn(user).subscribe();
+        })
+        .catch((error) => {
+          observer.error(new Error(error));
+        });
+    });
+  }
+
+  setLocalStorage(user) {
+    user.authData = window.btoa(user.username + ':' + user.password);
+    user.image = 'assets/img/user2-160x160.jpg';
+    delete user.password;
+    localStorage.setItem('admin-user', JSON.stringify(user));
+    this.userSubject.next(user);
+  }
+
+  updateLastLogInOn(user) {
+    user.last_login_on = serverTimestamp;
+    const id = _.clone(user.id);
+    delete user.id;
+    return new Observable((observer) => {
+      db.collection('users')
+        .doc(id)
+        .update(user)
+        .then(() => {
+          user.id = id;
         })
         .catch((error) => {
           observer.error(new Error(error));
@@ -65,9 +90,8 @@ export class AuthService {
         .add(userObj)
         .then((newObj) => {
           userObj = Object.assign(userObj, { id: newObj.id });
-
           delete userObj.password;
-          localStorage.setItem(USER_FIELD, JSON.stringify(userObj));
+          localStorage.setItem('admin-user', JSON.stringify(userObj));
           this.userSubject.next(userObj);
           observer.next(userObj);
         })
@@ -79,7 +103,7 @@ export class AuthService {
 
   logout(url?: string) {
     // remove user from local storage to log user out
-    localStorage.removeItem(USER_FIELD);
+    localStorage.removeItem('admin-user');
     this.userSubject.next(null);
     if (url) {
       this.router.navigate([url]);

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import db, {serverTimestamp} from './firebase';
+import db, { serverTimestamp } from './firebase';
 import { Observable } from 'rxjs';
 import { CategoryService } from '../services/category.service';
 import * as _ from 'lodash';
@@ -15,9 +15,8 @@ export class ProductService extends ApiService {
 
   getProducts(filter?) {
     return new Observable((observer) => {
-      let categories;
-      this.categoryService.getCategories().subscribe((data) => {
-        categories = data;
+      this.categoryService.getCategories().subscribe((data: any) => {
+        const categories = data;
 
         db.collection('/products').onSnapshot((snapshot) => {
           const products = snapshot.docs.map((doc) => {
@@ -42,7 +41,8 @@ export class ProductService extends ApiService {
             let validVisibility = true;
             const filterVisibility = _.get(filter, 'visibility', 'null');
             if (filterVisibility !== 'null') {
-              validVisibility = product.visibility === (filterVisibility === 'true');
+              validVisibility =
+                product.visibility === (filterVisibility === 'true');
             }
             return validName && validCategory && validVisibility;
           });
@@ -130,7 +130,7 @@ export class ProductService extends ApiService {
         });
     });
   }
-  
+
   deleteProduct(productId) {
     return new Observable((observer) => {
       db.collection('products')

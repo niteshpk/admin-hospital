@@ -27,11 +27,13 @@ export class UserDropdownMenuComponent implements OnInit {
   constructor(
     private elementRef: ElementRef,
     private renderer: Renderer2,
-    private authService: AuthService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.user = this.authService.userValue;
+    this.authService.user$.subscribe((user) => {
+      this.user = user;
+    });
   }
 
   toggleDropdownMenu() {

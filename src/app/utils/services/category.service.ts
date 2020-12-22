@@ -13,16 +13,17 @@ export class CategoryService extends ApiService {
   }
 
   getCategories(filter?) {
-    const categoryList = [];
     return new Observable((observer) => {
       db.collection('/categories').onSnapshot((snapshot) => {
+        const categoryList = [];
         snapshot.docs.map((doc) => {
           const category = Object.assign(doc.data(), { id: doc.id });
 
           let validVisibility = true;
           const filterVisibility = _.get(filter, 'visibility', 'null');
           if (filterVisibility !== 'null') {
-            validVisibility = category.visibility === (filterVisibility === 'true');
+            validVisibility =
+              category.visibility === (filterVisibility === 'true');
           }
 
           if (validVisibility) {
@@ -84,7 +85,7 @@ export class CategoryService extends ApiService {
         });
     });
   }
-  
+
   deleteCategory(categoryId) {
     return new Observable((observer) => {
       db.collection('categories')

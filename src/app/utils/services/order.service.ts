@@ -14,19 +14,22 @@ export class OrderService extends ApiService {
   ordersCount = new EventEmitter<any>();
   user: User;
 
-  constructor(private authService: AuthService, private userService: UserService) {
+  constructor(
+    private authService: AuthService,
+    private userService: UserService
+  ) {
     super();
-    this.authService.user.subscribe((user) => {
+    this.authService.user$.subscribe((user) => {
       this.user = user;
     });
   }
 
   getOrder(orderId: string) {
-    let order: any;
     return new Observable((observer) => {
       db.collection('orders')
         .doc(orderId)
         .onSnapshot((snapshot) => {
+          let order: any;
           if (!snapshot.exists) {
             observer.next('No order found for this orderId');
             return false;
@@ -44,10 +47,12 @@ export class OrderService extends ApiService {
   }
 
   getOrders(filter?) {
-    const orderList = [];
     return new Observable((observer) => {
-      db.collection('orders').orderBy('created_on', 'desc').get()
+      db.collection('orders')
+        .orderBy('created_on', 'desc')
+        .get()
         .then((querySnapshot) => {
+          const orderList = [];
           const docs = querySnapshot.docs;
           if (docs.length) {
             _.map(docs, (snapshot) => {
@@ -63,22 +68,33 @@ export class OrderService extends ApiService {
               if (filterOrderStatus !== 'null') {
                 validFilterOrderStatus = order.status === filterOrderStatus;
               }
-              const filterPaymentStatus = _.get(filter, 'payment_status', 'null');
+              const filterPaymentStatus = _.get(
+                filter,
+                'payment_status',
+                'null'
+              );
               if (filterPaymentStatus !== 'null') {
-                validFilterPaymentStatus = order.payment_status === filterPaymentStatus;
+                validFilterPaymentStatus =
+                  order.payment_status === filterPaymentStatus;
               }
-              if (validFilterUser && validFilterOrderStatus && validFilterPaymentStatus) {
+              if (
+                validFilterUser &&
+                validFilterOrderStatus &&
+                validFilterPaymentStatus
+              ) {
                 orderList.push(order);
-                
+
                 this.getOrderAddress(order.id).subscribe((address) => {
                   order.address = address;
                   this.getOrderItems(order.id).subscribe((items) => {
                     order.products = items;
-                    this.userService.getUser(order.user_id).subscribe((user) => {
-                      order.user = user;
-                    });
+                    this.userService
+                      .getUser(order.user_id)
+                      .subscribe((user) => {
+                        order.user = user;
+                      });
                   });
-                });                
+                });
               }
             });
           }
@@ -92,12 +108,12 @@ export class OrderService extends ApiService {
   }
 
   getOrderItems(orderId) {
-    const orderItemList = [];
     return new Observable((observer) => {
       db.collection('order_items')
         .where('order_id', '==', orderId)
         .get()
         .then((querySnapshot) => {
+          const orderItemList = [];
           const docs = querySnapshot.docs;
           if (docs.length) {
             _.map(docs, (snapshot) => {
@@ -115,12 +131,12 @@ export class OrderService extends ApiService {
   }
 
   getOrderAddress(orderId) {
-    const orderAddressList = [];
     return new Observable((observer) => {
       db.collection('order_addresses')
         .where('order_id', '==', orderId)
         .get()
         .then((querySnapshot) => {
+          const orderAddressList = [];
           if (querySnapshot.docs.length) {
             _.map(querySnapshot.docs, (snapshot) => {
               orderAddressList.push(
@@ -171,21 +187,21 @@ export class OrderService extends ApiService {
               });
 
               db.collection('order_addresses')
-              .where('order_id', '==', orderId)
-              .get()
-              .then((querySnapshot2) => {
-                querySnapshot2.forEach((doc) => {
-                  doc.ref.delete();
+                .where('order_id', '==', orderId)
+                .get()
+                .then((querySnapshot2) => {
+                  querySnapshot2.forEach((doc) => {
+                    doc.ref.delete();
+                  });
+                  observer.next(true);
+                })
+                .catch((error) => {
+                  observer.error(new Error(error));
                 });
-                observer.next(true);
-              })
-              .catch((error) => {
-                observer.error(new Error(error));
-              }); 
             })
             .catch((error) => {
               observer.error(new Error(error));
-            });          
+            });
         })
         .catch((error) => {
           observer.error(new Error(error));
